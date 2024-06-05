@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private List<String> deviceList = new ArrayList<>();
     private boolean isScanning = false;
 
-    Button stoptbtn, startbtn;
+    Button stoptbtn,startbtn;
     ImageView bt_search;
     TextView bt_text;
 
@@ -53,33 +53,13 @@ public class MainActivity extends AppCompatActivity {
     private Handler handler;
 
 
+
+
     @SuppressLint("ObsoleteSdkInt")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Initialize Bluetooth
-        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
-        bluetoothAdapter = bluetoothManager.getAdapter();
-
-        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-
-            Toast.makeText(this, "Bluetooth is disabled.", Toast.LENGTH_SHORT).show();
-        }
-
-        bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
-
-        // Initialize RecyclerView
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        deviceAdapter = new DeviceAdapter(this, deviceList);
-        recyclerView.setAdapter(deviceAdapter);
-        initUI();
-        initListener();
-
 
         // Request permissions
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -87,24 +67,29 @@ public class MainActivity extends AppCompatActivity {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_FINE_LOCATION);
             }
         }
+
+        // Initialize Bluetooth
+        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        bluetoothAdapter = bluetoothManager.getAdapter();
+
+        bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+
+        // Initialize RecyclerView
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        deviceAdapter = new DeviceAdapter(this,deviceList);
+        recyclerView.setAdapter(deviceAdapter);
+        initUI();
+        initListener();
+
     }
 
     @SuppressLint("SetTextI18n")
     private void initListener() {
         startbtn.setOnClickListener(view -> {
-            if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
-                    return;
-                }
-                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                    if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
+                        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
                     }else{
 
                 startbtn.setText("Scanning");
