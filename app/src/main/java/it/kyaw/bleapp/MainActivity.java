@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private List<String> deviceList = new ArrayList<>();
     private boolean isScanning = false;
 
-    Button stoptbtn,startbtn;
+    Button stoptbtn, startbtn;
     ImageView bt_search;
     TextView bt_text;
 
@@ -50,8 +51,6 @@ public class MainActivity extends AppCompatActivity {
     private static final long SCAN_PERIOD = 3000;
 
     private Handler handler;
-
-
 
 
     @SuppressLint("ObsoleteSdkInt")
@@ -65,8 +64,10 @@ public class MainActivity extends AppCompatActivity {
         bluetoothAdapter = bluetoothManager.getAdapter();
 
         if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+
             Toast.makeText(this, "Bluetooth is disabled.", Toast.LENGTH_SHORT).show();
-            finish();
         }
 
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
@@ -74,35 +75,10 @@ public class MainActivity extends AppCompatActivity {
         // Initialize RecyclerView
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        deviceAdapter = new DeviceAdapter(this,deviceList);
+        deviceAdapter = new DeviceAdapter(this, deviceList);
         recyclerView.setAdapter(deviceAdapter);
         initUI();
         initListener();
-
-        // Initialize buttons
-//       startbtn = findViewById(R.id.startbtn);
-//       stoptbtn = findViewById(R.id.stoptbtn);
-//       bt_search = findViewById(R.id.bt_search);
-//        bt_text= findViewById(R.id.bt_text);
-//
-//        startbtn.setOnClickListener(view -> {
-//            if (!isScanning) {
-//                Log.i("Kyaw", "Start Scanning");
-//                startbtn.setText("Scanning");
-//                bt_text.setText("Bluetooth Device Searching");
-//                bt_search.setBackgroundResource(R.drawable.ic_bt_searching);
-//                startScan();
-//            }
-//
-//        });
-//        stoptbtn.setOnClickListener(view -> {
-//            Log.i("Kyaw","Stoped Scanning");
-//            startbtn.setText("Start");
-//            bt_text.setText("Bluetooth Disable");
-//            bt_search.setBackgroundResource(R.drawable.ic_bt_disabled);
-//            stopScan();
-//
-//        });
 
 
         // Request permissions
@@ -116,6 +92,21 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     private void initListener() {
         startbtn.setOnClickListener(view -> {
+            if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                    }else{
+
                 startbtn.setText("Scanning");
                 bt_text.setText("Bluetooth Device Searching...");
 
@@ -129,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("kyaw","scanning timeout 3s");
 
 
-        });
+        }});
         stoptbtn.setOnClickListener(view -> {
             startbtn.setText("Start");
             bt_text.setText("Bluetooth Disable");
@@ -137,22 +128,6 @@ public class MainActivity extends AppCompatActivity {
 
         });
     }
-
-//    private void showAlerDialog() {
-//
-//        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-//        builder.setTitle("Device Name Change");
-//        builder.setMessage("Are you sure device name change!!");
-//
-//        builder.setPositiveButton("OK",((dialog, which) -> {
-//            Toast.makeText(MainActivity.this,"OK Clicked",Toast.LENGTH_SHORT).show();
-//        }));
-//        builder.setNegativeButton("Cancel", (dialog, which) -> {
-//            Toast.makeText(MainActivity.this, "Cancel clicked", Toast.LENGTH_SHORT).show();
-//        });
-//        AlertDialog dialog = builder.create();
-//        dialog.show();
-//    }
 
     private void initUI() {
 
@@ -174,12 +149,9 @@ public class MainActivity extends AppCompatActivity {
             deviceAdapter.notifyDataSetChanged();
             bluetoothLeScanner.startScan(scanCallback);
             Toast.makeText(this, "Scanning started...", Toast.LENGTH_SHORT).show();
-//            bt_search.setVisibility(View.INVISIBLE);
         }
         bt_search.setImageResource(R.drawable.ic_bt_searching);
         Log.i("Kyaw", "Start Scanning..........");
-
-//        bt_search.setBackgroundResource(R.drawable.ic_bt_searching);
     }
 
     @SuppressLint("MissingPermission")
@@ -192,7 +164,6 @@ public class MainActivity extends AppCompatActivity {
         }
         bt_search.setImageResource(R.drawable.ic_bt_disabled);
         Log.i("Kyaw", "Stop Scanning...........");
-//        bt_search.setBackgroundResource(R.drawable.ic_bt_disabled);
     }
 
     private final ScanCallback scanCallback = new ScanCallback() {
@@ -217,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_FINE_LOCATION) {
             if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Location permission is required for BLE scanning.", Toast.LENGTH_SHORT).show();
-                finish();
+//                finish();
             }
         }
     }
