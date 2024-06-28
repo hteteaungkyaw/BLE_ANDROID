@@ -15,6 +15,7 @@ import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -42,7 +43,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int REQUEST_FINE_LOCATION = 2;
+    private static final int PERMISSION_REQUEST_CODE = 1;
+
     private static final long SCAN_PERIOD = 5000;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @SuppressLint("MissingPermission")
         @Override
@@ -120,7 +124,79 @@ public class MainActivity extends AppCompatActivity {
 
         handler = new Handler();
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+
+        requestBluetoothPermissions();
+
+
+//        if (ContextCompat.checkSelfPermission(this,
+//                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(this,
+//                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_FINE_LOCATION);
+//        }
+//    }
+//
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+//            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                // Permission granted
+//
+//                Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
+//                requestBackgroundLocationPermission();
+//            } else {
+//                // Permission denied
+//                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+//            }
+//        }
+//    }
+
+//    private void requestBackgroundLocationPermission() {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+//                    != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(this,
+//                        new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+//            }
+//        }
+//            startScan();
     }
+
+    private void requestBluetoothPermissions() {
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
+                != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
+                        != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.BLUETOOTH_SCAN,
+                            Manifest.permission.BLUETOOTH_CONNECT,
+                            Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSION_REQUEST_CODE);
+        } else {
+            startScan();
+        }
+    }
+        @Override
+        public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission granted
+
+                    Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
+//                    requestBackgroundLocationPermission();
+                    startScan();
+                } else {
+                    // Permission denied
+                    Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
 
     private void displayCurrentDateTime() {
         // Get the current date and time
@@ -181,28 +257,38 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_FINE_LOCATION);
-        }
+//        if (ContextCompat.checkSelfPermission(this,
+//                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(this,
+//                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_FINE_LOCATION);
+//        }
+//    }
+//
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+//            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                // Permission granted
+//                Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show();
+//                requestBackgroundLocationPermission();
+//            } else {
+//                // Permission denied
+//                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+//            }
+//        }
+//    }
+//
+//    private void requestBackgroundLocationPermission() {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+//                    != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(this,
+//                        new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+//            }
+//        }
     }
 
-    @SuppressLint("MissingSuperCall")
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_FINE_LOCATION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted
-                startScan();
-            } else {
-                // Permission denied
-                Toast.makeText(this, "Location permission is required for BLE scanning", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
 
     @SuppressLint({"SetTextI18n", "MissingPermission", "NotifyDataSetChanged"})
     private void startScan() {
@@ -237,6 +323,7 @@ public class MainActivity extends AppCompatActivity {
         if (isScanning) {
             isScanning = false;
             deviceList.clear();
+            progress_bar.setVisibility(View.GONE);
             bluetoothLeScanner.stopScan(leScanCallback);
             Toast.makeText(this, "Scan stopped", Toast.LENGTH_SHORT).show();
         }
